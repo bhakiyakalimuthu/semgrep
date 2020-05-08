@@ -9,6 +9,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
   for targeting specific paths with command line options.
   The behavior of these flags mimics `grep`'s behavior.
 
+### Fixed
+- Correctly parse python files ending with a comment
+- Correclty parse implicit tuples in python f-strings
+- Correctly parse `%` token in python f-string format
+- Correctly parse python fstrings with spaces in interpolants
+
 ## [0.6.1](https://github.com/returntocorp/semgrep/releases/tag/v0.6.1) - 2020-05-06
 
 ### Fix
