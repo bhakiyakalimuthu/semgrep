@@ -15,7 +15,13 @@ from semgrep.dump_ast import dump_parsed_ast
 from semgrep.util import print_error
 from semgrep.util import print_error_exit
 
-__VERSION__ = "0.6.1"
+try:
+    from importlib import metadata
+except ImportError:
+    # Running on pre-3.8 Python; use importlib-metadata package
+    import importlib_metadata as metadata  # type: ignore
+
+__VERSION__ = metadata.version("semgrep")  # type: ignore
 
 try:
     CPU_COUNT = multiprocessing.cpu_count()

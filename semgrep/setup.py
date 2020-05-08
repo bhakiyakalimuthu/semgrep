@@ -52,7 +52,10 @@ try:
 except FileNotFoundError:
     long_description = ""
 
+source_dir = os.path.dirname(os.path.abspath(__file__))
+repo_root = os.path.dirname(source_dir)
 
+# Lifted with love (and edits) from https://github.com/benfred/py-spy/blob/master/setup.py
 class PostInstallCommand(install):
     """Post-installation for installation mode."""
 
@@ -64,12 +67,10 @@ class PostInstallCommand(install):
         # but we can't install to the bin directory:
         #     https://github.com/pypa/setuptools/issues/210#issuecomment-216657975
         # take the advice from that comment, and move over after install
-        source_dir = os.path.dirname(os.path.abspath(__file__))
 
-        if os.environ.get("PRECOMILED_LOCATION"):
+        if os.environ.get("PRECOMPILED_LOCATION"):
             source = os.environ["PRECOMPILED_LOCATION"]
         else:
-            repo_root = os.path.dirname(source_dir)
             if "osx" in distutils.util.get_platform():
                 with chdir(repo_root):
                     os.system(os.path.join(repo_root, "release-scripts/osx-release.sh"))
@@ -82,16 +83,11 @@ class PostInstallCommand(install):
                     )
                     source = os.path.join(repo_root, "semgrep-files/semgrep-core")
 
-        ## setuptools_rust doesn't seem to let me specify a musl cross compilation target
-        ## so instead just build ourselves here =(.
-        # if os.system("cargo build --release %s" % compile_args):
-        #    raise ValueError("Failed to compile!")
-
-        ## run this after trying to build with cargo (as otherwise this leaves
+        ## run this after trying to build (as otherwise this leaves
         ## venv in a bad state: https://github.com/benfred/py-spy/issues/69)
         install.run(self)
 
-        ## we're going to install the py-spy executable into the scripts directory
+        ## we're going to install the semgrep-core executable into the scripts directory
         ## but first make sure the scripts directory exists
         if not os.path.isdir(self.install_scripts):
             os.makedirs(self.install_scripts)
@@ -104,8 +100,9 @@ class PostInstallCommand(install):
 
 
 setup(
-    name="semgrep",  # Replace with your own username
-    version="0.6.1",
+    name="semgrep",
+    use_scm_version={"relative_to": source_dir},
+    setup_requires=["setuptools_scm"],
     author="Russell & Return 2 Corp",
     author_email="support@r2c.dev",
     description="Fast and syntax-aware semantic code pattern search for many languages: like grep but for code",
@@ -113,7 +110,12 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/returntocorp/semgrep",
-    install_requires=["colorama==0.4.3", "pyyaml==5.3", "requests==2.22.0"],
+    install_requires=[
+        "colorama==0.4.3",
+        "pyyaml==5.3",
+        "requests==2.22.0",
+        'importlib-metadata ~= 1.0 ; python_version < "3.8"',
+    ],
     entry_points={"console_scripts": ["semgrep=semgrep.__main__:main"]},
     packages=setuptools.find_packages(),
     classifiers=[
